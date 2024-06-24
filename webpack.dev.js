@@ -9,7 +9,7 @@ module.exports= merge(common,{
   
     output:{
        // bundle 文件名称
-    filename: '[name].bundle.js',
+    filename: 'script/[name].bundle.js',
     
     // bundle 文件路径
     path: path.resolve( fs.realpathSync(process.cwd()), 'dist'),
@@ -18,6 +18,7 @@ module.exports= merge(common,{
     clean: true
 
     },
+    devtool: 'source-map',//快发环境开启 资源映射
     devServer: {
         hot: true,
         //热加载

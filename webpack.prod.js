@@ -5,7 +5,7 @@ module.exports= merge(common,{
     
     output:{
         // bundle 文件名称
-     filename: '[name].bundle.js',
+     filename: 'script/[name].bundle.js',
      
      // bundle 文件路径
      path: config.resolveApp('dist'),

@@ -31,17 +31,17 @@ module.exports ={
                       options: {
                         presets: [
                           '@babel/preset-env',
-                          {
-                            '@babel/preset-typescript': {
-                              allowDeclareFields: true,
-                              // 其他preset选项
-                            },
-                          },
+                           
                         ],
                         // 其他babel-loader选项
                       },
                     },
-                  'ts-loader'
+                  {
+                    loader:'ts-loader',
+                    options:{
+                      appendTsSuffixTo: [/\.vue$/],
+                    }
+                  }
                 ],
                 exclude: /node_modules/,
               },
@@ -132,9 +132,25 @@ module.exports ={
           template:'./index.html' //得挂在模板
         }),
         new VueLoaderPlugin(),
-        new  MiniCssExtractPlugin(),
+        new  MiniCssExtractPlugin({
+          filename: 'css/[contenthash].css', //将css 文件提取出来 放在指定的文件夹下面
+        }),
         new ProgressBarPlugin({
           format: `  :msg [:bar] ${chalk.green.bold(':percent')} (:elapsed s)`
         })
       ],
+    optimization:{
+      minimize: true,// 压缩代码
+      splitChunks:{ // 代码分割 将公共的模块提取出来  splitChunks 的条件是 模块来自于node_modules 或者说 是 模块之间共享
+        cacheGroups:{ // 缓存我们的第三方库
+          vendors:{
+            test: /[\\/]node_modules[\\/]/,
+            name:"vendors",
+            priority: -10,
+            chunks:'all'
+          },
+         
+        }
+      }
+    }
 }
