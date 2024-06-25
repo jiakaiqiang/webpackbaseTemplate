@@ -1,8 +1,8 @@
-#### 动态导入
+### 动态导入
 
  import().then(res=>{}) ///动态导入
 
-#### 缓存
+### 缓存
 
   1.hash缓存
     利用contentHash 内容不便 hash值不便的原则进行缓存。
@@ -282,9 +282,158 @@ shimming 是指在代码中预置一些依赖，以便在代码运行时能够�
 ```
     
 
+    
+
          
    
    当文件中使用了预设值的全局变量后 webpack才会将package 构建到使用它的模块中。
 #### 模块联邦
+
+模块联邦是一种模块化解决方案，它允许在不同的模块之间共享模块。
+
+##### 基本使用
+1.系统a
+
+```js
+    // 导出模块
+    const HtmlWebpackPlugin = require('html-webpack-plugin')
+    const {
+    ModuleFederationPlugin
+    } = require('webpack').container
+    module.exports = {
+        mode: 'production',
+        entry: './src/index.js',
+        plugins: [
+            new HtmlWebpackPlugin(),
+            new ModuleFederationPlugin({
+                // 模块联邦名字
+                name: 'nav',
+                // 外部访问的资源名字
+                filename: 'remoteEntry.js',
+                // 引用的外部资源列表
+                remotes: {},
+                // 暴露给外部资源列表
+                exposes: {
+                    './Header': './src/Header.js',
+                },
+                // 共享模块，如lodash
+                shared: {},
+            }),
+        ]
+    }
+```
+2.系统b
+```js
+    // 导出模块
+    const HtmlWebpackPlugin = require('html-webpack-plugin')
+    const {
+    ModuleFederationPlugin
+    } = require('webpack').container
+    module.exports = {
+        mode: 'production',
+        entry: './src/index.js',
+        plugins: [
+            new HtmlWebpackPlugin(),
+            new ModuleFederationPlugin({
+                // 模块联邦名字
+                name: 'home',
+                // 外部访问的资源名字
+                filename: 'remoteEntry.js',
+                // 引用的外部资源列表
+                remotes: {
+                    home:'nav@http://localhost:8000/remoteEntry.js'  //使用系统a 的模块
+                },
+                // 暴露给外部资源列表
+                exposes: {
+                    './Header': './src/Header.js', //抛出自己的模块
+                },
+                // 共享模块，如lodash
+                shared: {},
+            })
+        ]
+    }
+       
+    
+```
+b系统中的使用
+```js
+    import('home/Header')
+    .then(module => {
+        module.default()
+    })
+```
+        
+    
+##### 模块联邦的配置
+
+```js
+// webpack.config.js
+  // 导出模块
+    const HtmlWebpackPlugin = require('html-webpack-plugin')
+    const {
+    ModuleFederationPlugin
+    } = require('webpack').container
+    module.exports = {
+        mode: 'production',
+        entry: './src/index.js',
+        plugins: [
+            new HtmlWebpackPlugin(),
+            new ModuleFederationPlugin({
+                // 模块联邦名字
+                name: 'nav',
+                // 外部访问的资源名字
+                filename: 'remoteEntry.js',
+                // 引用的外部资源列表
+                remotes: {},
+                // 暴露给外部资源列表
+                exposes: {
+                    './Header': './src/Header.js',
+                },
+                // 共享模块，如lodash
+                shared: {},
+            }),
+        ]
+    }
+```
+### 性能优化
+#### 利用include和exclude缩小范围
+
+include 和 exclude 都是用来缩小范围,但是include 只针对单一的文件,而exclude 则可以针对多个文件进行排除
+```js
+module: {
+rules: [
+        {
+            test: /\.js$/,
+            include: path.resolve(__dirname, 'src'),//通过include 缩小范围
+            exclude: /node_modules/,//通过exclude 排除范围
+            use: {
+                loader: 'babel-loader',
+
+            },
+        ],
+        },
+```
+#### 解析
+ - 减少resolve.modules,resolve.extensions,resolve.descriptionsFiels,resolve.mainFiles 中的条目数量，因为这些会增加文件系统调用的次数。
+ - 如果不使用symlinks(npm link等)建议resolve.symlinks:false
+
+####  缓存
+将cache 类型设置为内存或者文件系统
+```js
+//webpack.config.js
+
+cache: {
+    type: 'memory'
+  }
+```
+#### 使用dll加速构建
+
+#### worker池
+利用thread-loader 将非常消耗资源的loader 分流给thread-loader
+
+<font color='red'>注意:不能使用太多的worker y因为node.js的runtime和loader都启动了开销。主子进程之间模块传输也是非常消耗资源的。</font>
+
+
+
 
 

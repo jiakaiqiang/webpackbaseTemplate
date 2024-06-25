@@ -15,7 +15,8 @@ module.exports= merge(common,{
     path: path.resolve( fs.realpathSync(process.cwd()), 'dist'),
     
     // 编译前清除目录
-    clean: true
+    clean: true,
+    pathinfo: false // 去除打包文件中的注释
 
     },
     devtool: 'source-map',//快发环境开启 资源映射
